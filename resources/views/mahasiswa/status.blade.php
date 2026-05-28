@@ -58,13 +58,13 @@
                                         Diproses
                                     </span>
 
-                                @elseif($p->status == 'Selesai')
+                                @elseif($p->status == 'Disetujui')
 
                                     <span class="badge bg-success">
-                                        Selesai
+                                        Disetujui
                                     </span>
 
-                                @else
+                                @elseif($p->status == 'Ditolak')
 
                                     <span class="badge bg-danger">
                                         Ditolak

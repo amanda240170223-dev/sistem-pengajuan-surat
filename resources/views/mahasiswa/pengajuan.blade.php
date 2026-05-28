@@ -25,21 +25,36 @@
 </div>
 
 <div class="mb-3">
+
 <label>Jenis Surat</label>
+
 <select name="jenis_surat" class="form-control">
-<option>Surat Aktif Kuliah</option>
-<option>Surat Keterangan Mahasiswa</option>
-<option>Surat Penelitian</option>
+
+    @foreach($jenisSurat as $js)
+
+        <option>
+            {{ $js->nama_surat }}
+        </option>
+
+    @endforeach
+
 </select>
+
 </div>
 
 <div class="mb-3">
+
 <label>Keterangan</label>
-<textarea name="keterangan" class="form-control"></textarea>
+
+<textarea name="keterangan"
+class="form-control"></textarea>
+
 </div>
 
 <button class="btn btn-primary">
+
 Kirim Pengajuan
+
 </button>
 
 </form>

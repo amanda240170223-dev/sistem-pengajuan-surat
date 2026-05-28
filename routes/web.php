@@ -17,7 +17,11 @@ Route::get('/dashboard', function () {
 });
 
 Route::get('/pengajuan', function () {
-    return view('mahasiswa.pengajuan');
+
+    $jenisSurat = DB::table('jenis_surat')->get();
+
+    return view('mahasiswa.pengajuan', compact('jenisSurat'));
+
 });
 
 Route::post('/pengajuan/store', function () {
@@ -50,9 +54,26 @@ Route::get('/status', function () {
 
 Route::get('/admin', function () {
 
+    if(!session('admin_login')){
+
+        return redirect('/admin/login');
+
+    }
+
     $pengajuan = DB::table('pengajuan')->get();
 
-    return view('admin.dashboard', compact('pengajuan'));
+    $totalPengajuan = DB::table('pengajuan')->count();
+
+    $totalMahasiswa = DB::table('mahasiswa')->count();
+
+    $totalJenisSurat = DB::table('jenis_surat')->count();
+
+    return view('admin.dashboard', compact(
+        'pengajuan',
+        'totalPengajuan',
+        'totalMahasiswa',
+        'totalJenisSurat'
+    ));
 
 });
 
@@ -65,7 +86,11 @@ Route::post('/admin/login', function () {
     $email = request('email');
     $password = request('password');
 
-    if($email == 'admin@gmail.com' && $password == 'admin123'){
+    if($email == 'admin@gmail.com' && $password == 'amandadantemanteman'){
+
+        session([
+            'admin_login' => true
+        ]);
 
         return redirect('/admin');
 
@@ -74,5 +99,131 @@ Route::post('/admin/login', function () {
         return back()->with('error', 'Email atau Password salah');
 
     }
+
+});
+
+Route::get('/status/setujui/{id}', function ($id) {
+
+    DB::table('pengajuan')
+    ->where('id', $id)
+    ->update([
+        'status' => 'Disetujui'
+    ]);
+
+    return back();
+
+});
+
+Route::get('/status/tolak/{id}', function ($id) {
+
+    DB::table('pengajuan')
+    ->where('id', $id)
+    ->update([
+        'status' => 'Ditolak'
+    ]);
+
+    return back();
+
+});
+
+Route::get('/jenis-surat', function () {
+
+    $jenisSurat = DB::table('jenis_surat')->get();
+
+    return view('admin.jenis_surat', compact('jenisSurat'));
+
+});
+
+Route::post('/jenis-surat/store', function () {
+
+    DB::table('jenis_surat')->insert([
+
+        'nama_surat' => request('nama_surat'),
+
+        'created_at' => Carbon::now(),
+        'updated_at' => Carbon::now()
+
+    ]);
+
+    return redirect('/jenis-surat');
+
+});
+
+Route::get('/jenis-surat/delete/{id}', function ($id) {
+
+    DB::table('jenis_surat')
+    ->where('id', $id)
+    ->delete();
+
+    return redirect('/jenis-surat');
+
+});
+
+Route::get('/mahasiswa', function () {
+
+    $mahasiswa = DB::table('mahasiswa')->get();
+
+    return view('admin.mahasiswa', compact('mahasiswa'));
+
+});
+
+Route::post('/mahasiswa/store', function () {
+
+    DB::table('mahasiswa')->insert([
+
+        'nama' => request('nama'),
+        'nim' => request('nim'),
+
+        'created_at' => Carbon::now(),
+        'updated_at' => Carbon::now()
+
+    ]);
+
+    return redirect('/mahasiswa');
+
+});
+
+Route::get('/mahasiswa/delete/{id}', function ($id) {
+
+    DB::table('mahasiswa')
+    ->where('id', $id)
+    ->delete();
+
+    return redirect('/mahasiswa');
+
+});
+
+Route::get('/mahasiswa/edit/{id}', function ($id) {
+
+    $mahasiswa = DB::table('mahasiswa')
+    ->where('id', $id)
+    ->first();
+
+    return view('admin.edit_mahasiswa', compact('mahasiswa'));
+
+});
+
+Route::post('/mahasiswa/update/{id}', function ($id) {
+
+    DB::table('mahasiswa')
+    ->where('id', $id)
+    ->update([
+
+        'nama' => request('nama'),
+        'nim' => request('nim'),
+
+        'updated_at' => Carbon::now()
+
+    ]);
+
+    return redirect('/mahasiswa');
+
+});
+
+Route::get('/logout', function () {
+
+    session()->flush();
+
+    return redirect('/');
 
 });
