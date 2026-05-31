@@ -26,12 +26,25 @@ Route::get('/pengajuan', function () {
 
 Route::post('/pengajuan/store', function () {
 
+    $fileName = null;
+
+    if(request()->hasFile('file')) {
+
+        $fileName = time().'_'.request()->file('file')->getClientOriginalName();
+
+        request()->file('file')->move(
+            public_path('uploads'),
+            $fileName
+        );
+    }
+
     DB::table('pengajuan')->insert([
 
         'nama' => request('nama'),
         'nim' => request('nim'),
         'jenis_surat' => request('jenis_surat'),
         'keterangan' => request('keterangan'),
+        'file' => $fileName,
         'status' => 'Diproses',
 
         'created_at' => Carbon::now(),
@@ -40,7 +53,7 @@ Route::post('/pengajuan/store', function () {
     ]);
 
     return redirect('/pengajuan')
-    ->with('success', 'Pengajuan berhasil dikirim dan sedang direkap admin.');
+        ->with('success', 'Pengajuan berhasil dikirim dan sedang direkap admin.');
 
 });
 
