@@ -10,7 +10,7 @@
 </div>
 @endif
 
-<form method="POST" action="/pengajuan/store">
+<form method="POST" action="/pengajuan/store" enctype="multipart/form-data">
 
 @csrf
 
@@ -51,6 +51,11 @@ class="form-control"></textarea>
 
 </div>
 
+    <div class="mb-3">
+    <label>Lampiran File</label>
+    <input type="file" name="file" class="form-control">
+</div>
+    
 <button class="btn btn-primary">
 
 Kirim Pengajuan
