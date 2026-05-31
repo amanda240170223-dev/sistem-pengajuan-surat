@@ -10,6 +10,7 @@ CREATE TABLE pengajuan (
     nim VARCHAR(20) NOT NULL,
     jenis_surat VARCHAR(100) NOT NULL,
     keterangan TEXT NOT NULL,
+    file VARCHAR(255) NULL,
     status VARCHAR(50) DEFAULT 'Diproses',
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
