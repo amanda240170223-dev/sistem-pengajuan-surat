@@ -17,6 +17,7 @@ return new class extends Migration
     $table->string('nim');
     $table->string('jenis_surat');
     $table->text('keterangan');
+    $table->string('file')->nullable();
     $table->string('status')->default('Diproses');
     $table->timestamps();
 });
