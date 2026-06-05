@@ -108,9 +108,13 @@ Route::get('/jenis-surat/delete/{id}', function ($id) {
     return redirect('/jenis-surat');
 });
 
-Route::get('/mahasiswa', function () {
-    $mahasiswa = DB::table('mahasiswa')->get();
-    return view('admin.mahasiswa', compact('mahasiswa'));
+Route::get('/riwayat', function () {
+
+    $pengajuan = DB::table('pengajuan')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return view('admin.riwayat', compact('pengajuan'));
 });
 
 Route::post('/mahasiswa/store', function () {
