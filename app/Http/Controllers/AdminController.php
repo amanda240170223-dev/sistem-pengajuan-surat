@@ -20,14 +20,14 @@ class AdminController extends Controller
 
         // Mengambil data statistik counts sesuai dengan database Anda
         $totalPengajuan = DB::table('pengajuan')->count();
-        $totalMahasiswa = DB::table('mahasiswa')->count();
+        $totalRiwayat = DB::table('pengajuan')->count();
         $totalJenisSurat = DB::table('jenis_surat')->count();
 
         // Mengirimkan semua data ke view 'admin.dashboard'
         return view('admin.dashboard', compact(
             'pengajuan',
             'totalPengajuan',
-            'totalMahasiswa',
+            'totalRiwayat',
             'totalJenisSurat'
         ));
     }
