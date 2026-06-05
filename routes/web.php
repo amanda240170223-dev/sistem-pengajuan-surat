@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Http\Controllers\AdminController; // Memanggil AdminController untuk aksi status & upload berkas
+use App\Http\Controllers\AdminController; 
+use App\Http\Controllers\PengajuanSuratController; // Memanggil Controller Baru
 
 /*
 |--------------------------------------------------------------------------
@@ -23,51 +24,21 @@ Route::get('/dashboard', function () {
     return view('mahasiswa.dashboard');
 });
 
-Route::get('/pengajuan', function () {
-    $jenisSurat = DB::table('jenis_surat')->get();
-    return view('mahasiswa.pengajuan', compact('jenisSurat'));
-});
-
-Route::post('/pengajuan/store', function () {
-    $fileName = null;
-
-    if(request()->hasFile('file')) {
-        $fileName = time().'_'.request()->file('file')->getClientOriginalName();
-        request()->file('file')->move(
-            public_path('uploads'),
-            $fileName
-        );
-    }
-
-    DB::table('pengajuan')->insert([
-        'nama' => request('nama'),
-        'nim' => request('nim'),
-        'jenis_surat' => request('jenis_surat'),
-        'keterangan' => request('keterangan'),
-        'file' => $fileName,
-        'status' => 'Diproses',
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now()
-    ]);
-
-    return redirect('/pengajuan')
-        ->with('success', 'Pengajuan berhasil dikirim dan sedang direkap admin.');
-});
+// --- PERBAIKAN ROUTE PENGAJUAN (Menggunakan PengajuanSuratController) ---
+Route::get('/pengajuan', [PengajuanSuratController::class, 'create'])->name('pengajuan.create');
+Route::post('/pengajuan/store', [PengajuanSuratController::class, 'store'])->name('pengajuan.store');
 
 // ==========================================================================
-// PERBAIKAN RUTE STATUS: Memfilter data pengajuan berdasarkan NIM milik sendiri
+// ROUTE STATUS: Memfilter data pengajuan berdasarkan NIM milik sendiri
 // ==========================================================================
 Route::get('/status', function () {
-    // 1. Ambil NIM dari session login mahasiswa (Sesuaikan dengan key session login Anda, misal: 'mahasiswa_nim' atau 'nim')
     $nim_mahasiswa = session('mahasiswa_nim') ?? session('nim');
 
     if ($nim_mahasiswa) {
-        // Jika ada session login, filter data pengajuan yang NIM-nya COCOK dengan mahasiswa yang login
         $pengajuan = DB::table('pengajuan')
             ->where('nim', $nim_mahasiswa)
             ->get();
     } else {
-        // Fallback / Cadangan: Jika belum menerapkan sistem session login, tampilkan semua data agar tidak kosong saat ditest
         $pengajuan = DB::table('pengajuan')->get();
     }
 
@@ -76,7 +47,7 @@ Route::get('/status', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Login Admin & Fungsi Utama Admin (Menggunakan Controller Baru)
+| Web Routes - Login Admin & Fungsi Utama Admin
 |--------------------------------------------------------------------------
 */
 
@@ -92,14 +63,17 @@ Route::post('/admin/login', function () {
         session([
             'admin_login' => true
         ]);
-        return redirect('/admin/dashboard'); // Diarahkan langsung ke dashboard Controller
+        return redirect('/admin/dashboard'); 
     } else {
         return back()->with('error', 'Email atau Password salah');
     }
 });
 
-// Rute Dashboard Admin menggunakan Controller
+// Rute Dashboard Admin menggunakan Controller bawaan Anda
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+// --- ROUTE ADMIN BARU: Untuk melihat & memantau berkas upload mahasiswa ---
+Route::get('/admin/pengajuan-surat', [PengajuanSuratController::class, 'adminIndex'])->name('admin.pengajuan.index');
 
 // Rute Dinamis untuk Mengubah Status (Setuju, Tolak, Proses)
 Route::post('/admin/status/{id}/{status}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
