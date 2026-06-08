@@ -2,12 +2,21 @@
 
 @section('content')
 <div style="background-color: #f9fafb; min-height: 100vh; padding: 2rem 1rem; display: flex; justify-content: center; align-items: flex-start;">
-    
+
     <div style="background: #ffffff; width: 100%; max-w: 640px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 2rem;">
-        
+
         <h2 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">
             Form Pengajuan Surat Mahasiswa
         </h2>
+
+    <style>
+body {
+    background-image: url('{{ asset("images/logo.png") }}');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 400px;
+}
+</style>
 
         {{-- Notifikasi Sukses --}}
         @if(session('success'))
@@ -19,7 +28,7 @@
         {{-- Form Input --}}
         <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.25rem;">
             @csrf
-            
+
             <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                 <label style="font-size: 0.875rem; font-weight: 600; color: #374151;">Nama Lengkap</label>
                 <input type="text" name="nama" required style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem 0.75rem; background-color: #f9fafb; font-size: 0.875rem; box-sizing: border-box;">

@@ -4,41 +4,84 @@
 
 <div class="row justify-content-center">
 
-<div class="col-md-4">
+    <div class="col-md-4">
 
-<div class="card">
+        <div class="card shadow">
 
-<div class="card-header text-center">
-Login Mahasiswa
-</div>
+<style>
+body {
+    background-color: #f5f5f5;
+    background-image: url('{{ asset("images/logo.png") }}');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 1099px;
+    background-attachment: fixed;
+}
+</style>
 
-<div class="card-body">
+            <div class="card-header text-center">
+                <h4>Login Mahasiswa</h4>
+            </div>
 
-<form method="POST" action="/login">
+            <div class="card-body">
 
-@csrf
+                {{-- Pesan sukses setelah register --}}
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-<div class="mb-3">
-<label>Email</label>
-<input type="email" name="email" class="form-control">
-</div>
+                {{-- Pesan error login --}}
+                @if(session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-<div class="mb-3">
-<label>Password</label>
-<input type="password" name="password" class="form-control">
-</div>
+                {{-- Error validasi --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
 
-<button class="btn btn-primary w-100">
-Login
-</button>
+                <form method="POST" action="/login">
+                    @csrf
 
-</form>
+                    <div class="mb-3">
+                        <label>NIM</label>
+                        <input type="text"
+                               name="nim"
+                               class="form-control"
+                               placeholder="Masukkan NIM"
+                               required>
+                    </div>
 
-</div>
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Masukkan Password"
+                               required>
+                    </div>
 
-</div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Login
+                    </button>
+                </form>
 
-</div>
+                <div class="text-center mt-3">
+                    Belum punya akun?
+                    <a href="/register">Register</a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

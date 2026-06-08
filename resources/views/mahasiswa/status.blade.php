@@ -3,6 +3,17 @@
 @section('content')
 <div class="container mt-4">
 
+<style>
+body {
+    background-color: #f5f5f5;
+    background-image: url('{{ asset("images/logo.png") }}');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 1000px;
+    background-attachment: fixed;
+}
+</style>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Status Pengajuan Surat Anda</h2>
         <a href="/dashboard" class="btn btn-secondary">Kembali ke Dashboard</a>
@@ -27,7 +38,7 @@
                         @forelse($pengajuan as $p)
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
-                            
+
                             {{-- MENAMPILKAN DATA NAMA DAN NIM --}}
                             <td>
                                 <strong>{{ $p->nama ?? 'Nama Tidak Ditemukan' }}</strong><br>
@@ -45,11 +56,13 @@
                                     <span class="badge bg-warning text-dark text-uppercase">{{ $p->status ?? 'Diproses' }}</span>
                                 @endif
                             </td>
-                            
+
                             {{-- TEMPAT DOWNLOAD BERKAS BALASAN --}}
                             <td class="text-center">
-                                @if(isset($p->berkas) && $p->berkas)
-                                    <a href="{{ asset('storage/' . $p->berkas) }}" target="_blank" class="btn btn-primary btn-sm font-weight-bold">
+                               @if(isset($p->berkas) && $p->berkas)
+                                    <a href="{{ asset('uploads/' . $p->berkas) }}"
+                                    target="_blank"
+                                    class="btn btn-primary btn-sm font-weight-bold">
                                         ⬇️ Download Berkas
                                     </a>
                                 @else

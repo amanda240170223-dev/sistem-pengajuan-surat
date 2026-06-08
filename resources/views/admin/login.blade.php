@@ -1,8 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style>
+body{
+    background-color:#f8f9fa;
+}
+
+/* Logo sebagai background */
+.logo-bg{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:1000px;
+    opacity:0.85;
+    pointer-events:none;
+    z-index:0;
+}
+
+/* Form login berada di atas logo */
+.login-card{
+    position:relative;
+    z-index:1;
+}
+</style>
 
     <meta charset="UTF-8">
+ <body class="admin-background"></body>
+<img src="{{ asset('images/logo.png') }}"
+     class="logo-bg"
+     alt="Logo">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login Admin</title>

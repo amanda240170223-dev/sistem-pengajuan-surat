@@ -1,184 +1,105 @@
-<?php
+@extends('layout.app')
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Http\Controllers\AdminController; // Memanggil AdminController untuk aksi status & upload berkas
+@section('content')
+ <div class="container mt-4">
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Autentikasi & Halaman Mahasiswa
-|--------------------------------------------------------------------------
-*/
+<style>
+        body {
+            background-color: #f5f5f5;
+        }
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: url('{{ asset("images/logo.png") }}') center center no-repeat;
+            background-size: 1000px;
+            opacity: 0.80;
+            z-index: -1;
+        }
+</style>
 
-Route::post('/login', function () {
-    return redirect('/dashboard');
-});
+<div class="container mt-4">
 
-Route::get('/dashboard', function () {
-    return view('mahasiswa.dashboard');
-});
 
-Route::get('/pengajuan', function () {
-    $jenisSurat = DB::table('jenis_surat')->get();
-    return view('mahasiswa.pengajuan', compact('jenisSurat'));
-});
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Riwayat Pengajuan</h2>
 
-Route::post('/pengajuan/store', function () {
-    $fileName = null;
+        <a href="/admin/dashboard" class="btn btn-secondary">
+            Kembali
+        </a>
+    </div>
 
-    if(request()->hasFile('file')) {
-        $fileName = time().'_'.request()->file('file')->getClientOriginalName();
-        request()->file('file')->move(
-            public_path('uploads'),
-            $fileName
-        );
-    }
+    <div class="card shadow">
+        <div class="card-body">
 
-    DB::table('pengajuan')->insert([
-        'nama' => request('nama'),
-        'nim' => request('nim'),
-        'jenis_surat' => request('jenis_surat'),
-        'keterangan' => request('keterangan'),
-        'file' => $fileName,
-        'status' => 'Diproses',
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now()
-    ]);
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>NIM</th>
+                        <th>Jenis Surat</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                        <th>Tanggal & Jam</th>
+                        <th>Aksi</th>
+                        <th>PDF</th>
+                    </tr>
+                </thead>
 
-    return redirect('/pengajuan')
-        ->with('success', 'Pengajuan berhasil dikirim dan sedang direkap admin.');
-});
+                <tbody>
+                    @forelse($pengajuan as $p)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $p->nama }}</td>
+                        <td>{{ $p->nim }}</td>
+                        <td>{{ $p->jenis_surat }}</td>
+                        <td>
+                            @if($p->status == 'disetujui')
+                                <span class="badge bg-success">Disetujui</span>
+                            @elseif($p->status == 'ditolak')
+                                <span class="badge bg-danger">Ditolak</span>
+                            @else
+                                <span class="badge bg-warning text-dark">Diproses</span>
+                            @endif
+                        </td>
 
-// ==========================================================================
-// PERBAIKAN RUTE STATUS: Memfilter data pengajuan berdasarkan NIM milik sendiri
-// ==========================================================================
-Route::get('/status', function () {
-    // 1. Ambil NIM dari session login mahasiswa (Sesuaikan dengan key session login Anda, misal: 'mahasiswa_nim' atau 'nim')
-    $nim_mahasiswa = session('mahasiswa_nim') ?? session('nim');
+                        <td>{{ $p->keterangan }}</td>
 
-    if ($nim_mahasiswa) {
-        // Jika ada session login, filter data pengajuan yang NIM-nya COCOK dengan mahasiswa yang login
-        $pengajuan = DB::table('pengajuan')
-            ->where('nim', $nim_mahasiswa)
-            ->get();
-    } else {
-        // Fallback / Cadangan: Jika belum menerapkan sistem session login, tampilkan semua data agar tidak kosong saat ditest
-        $pengajuan = DB::table('pengajuan')->get();
-    }
+                        <td>{{ $p->created_at }}</td>
 
-    return view('mahasiswa.status', compact('pengajuan'));
-});
+                        <td>
+                            {{ ucfirst($p->status) }}
+                        </td>
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Login Admin & Fungsi Utama Admin (Menggunakan Controller Baru)
-|--------------------------------------------------------------------------
-*/
+                        <td>
+    @if($p->berkas)
+        <a href="{{ asset('uploads/'.$p->berkas) }}"
+           target="_blank"
+           class="btn btn-success btn-sm">
+           Lihat PDF
+        </a>
+    @else
+        <span class="text-muted">
+            Belum Upload
+        </span>
+    @endif
+</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            Belum ada data riwayat pengajuan
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
 
-Route::get('/admin/login', function () {
-    return view('admin.login');
-});
+            </table>
 
-Route::post('/admin/login', function () {
-    $email = request('email');
-    $password = request('password');
+        </div>
+    </div>
 
-    if($email == 'admin@gmail.com' && $password == 'amandadantemanteman'){
-        session([
-            'admin_login' => true
-        ]);
-        return redirect('/admin/dashboard'); // Diarahkan langsung ke dashboard Controller
-    } else {
-        return back()->with('error', 'Email atau Password salah');
-    }
-});
-
-// Rute Dashboard Admin menggunakan Controller
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-// Rute Dinamis untuk Mengubah Status (Setuju, Tolak, Proses)
-Route::post('/admin/status/{id}/{status}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
-
-// Rute khusus untuk Upload File Berkas Balasan dari Admin
-Route::post('/admin/upload/{id}', [AdminController::class, 'uploadBerkas'])->name('admin.uploadBerkas');
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Manajemen Data Admin (CRUD Jenis Surat & Mahasiswa)
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/jenis-surat', function () {
-    $jenisSurat = DB::table('jenis_surat')->get();
-    return view('admin.jenis_surat', compact('jenisSurat'));
-});
-
-Route::post('/jenis-surat/store', function () {
-    DB::table('jenis_surat')->insert([
-        'nama_surat' => request('nama_surat'),
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now()
-    ]);
-    return redirect('/jenis-surat');
-});
-
-Route::get('/jenis-surat/delete/{id}', function ($id) {
-    DB::table('jenis_surat')
-    ->where('id', $id)
-    ->delete();
-    return redirect('/jenis-surat');
-});
-
-Route::get('/riwayat', function () {
-
-    $pengajuan = DB::table('pengajuan')
-        ->orderBy('created_at', 'desc')
-        ->get();
-
-    return view('admin.riwayat', compact('pengajuan'));
-});
-
-Route::post('/mahasiswa/store', function () {
-    DB::table('mahasiswa')->insert([
-        'nama' => request('nama'),
-        'nim' => request('nim'),
-        'created_at' => Carbon::now(),
-        'updated_at' => Carbon::now()
-    ]);
-    return redirect('/mahasiswa');
-});
-
-Route::get('/mahasiswa/delete/{id}', function ($id) {
-    DB::table('mahasiswa')
-    ->where('id', $id)
-    ->delete();
-    return redirect('/mahasiswa');
-});
-
-Route::get('/mahasiswa/edit/{id}', function ($id) {
-    $mahasiswa = DB::table('mahasiswa')
-    ->where('id', $id)
-    ->first();
-    return view('admin.edit_mahasiswa', compact('mahasiswa'));
-});
-
-Route::post('/mahasiswa/update/{id}', function ($id) {
-    DB::table('mahasiswa')
-    ->where('id', $id)
-    ->update([
-        'nama' => request('nama'),
-        'nim' => request('nim'),
-        'updated_at' => Carbon::now()
-    ]);
-    return redirect('/mahasiswa');
-});
-
-Route::get('/logout', function () {
-    session()->flush();
-    return redirect('/');
-});
+</div>
+@endsection
