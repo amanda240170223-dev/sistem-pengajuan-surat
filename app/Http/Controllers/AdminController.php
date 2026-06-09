@@ -56,10 +56,13 @@ class AdminController extends Controller
         if ($request->hasFile('berkas')) {
             // Membuat nama file unik berdasarkan waktu agar tidak bentrok
             $fileName = time() . '_' . $request->file('berkas')->getClientOriginalName();
-            
-            // Memindahkan file berkas ke folder public/uploads (sama seperti alur upload pengajuan Anda)
-            $request->file('berkas')->move(public_path('uploads'), $fileName);
 
+            // Pastikan folder uploads ada, kalau tidak ada buat otomatis
+        if (!file_exists(public_path('uploads'))) {
+            mkdir(public_path('uploads'), 0755, true);
+        }
+
+         $request->file('berkas')->move(public_path('uploads'), $fileName);
             // Update nama file berkas ke dalam database tabel pengajuan
             DB::table('pengajuan')
                 ->where('id', $id)
