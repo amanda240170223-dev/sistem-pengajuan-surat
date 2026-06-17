@@ -56,24 +56,93 @@ body {
                 <textarea name="keterangan" rows="3" required style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem 0.75rem; background-color: #f9fafb; font-size: 0.875rem; box-sizing: border-box; resize: vertical;"></textarea>
             </div>
 
-            <div style="border: 1px dashed #cbd5e1; padding: 1rem; border-radius: 6px; background-color: #f8fafc;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
-                    📄 Upload Slip Pembayaran UKT (PDF/JPG/PNG)
-                </label>
-                <input type="file" name="slip_ukt" required style="font-size: 0.875rem; color: #64748b;">
-            </div>
+            <div id="upload-container" style="display: flex; flex-direction: column; gap: 1rem;">
+    {{-- Upload fields akan muncul di sini secara dinamis --}}
+</div>
 
-            <div style="border: 1px dashed #cbd5e1; padding: 1rem; border-radius: 6px; background-color: #f8fafc; margin-bottom: 0.5rem;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">
-                    📄 Upload KRS Terbaru (PDF/JPG/PNG)
-                </label>
-                <input type="file" name="krs_terbaru" required style="font-size: 0.875rem; color: #64748b;">
-            </div>
-
-            <button type="submit" style="width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; padding: 0.75rem; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
-                Kirim Pengajuan
-            </button>
+<button type="submit" style="width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; padding: 0.75rem; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
+    Kirim Pengajuan
+</button>
         </form>
     </div>
 </div>
+
+<script>
+const uploadConfig = {
+    "Surat Keterangan": [
+        { name: "khs_terbaru", label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",    label: "Slip Pembayaran UKT", required: true },
+    ],
+    "Surat Pengantar KP/Magang": [
+        { name: "khs_terbaru",      label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",         label: "Slip Pembayaran UKT", required: true },
+        { name: "surat_perusahaan", label: "Surat Permohonan dari Perusahaan", required: true },
+    ],
+    "Surat Pengunduran Diri": [
+        { name: "khs_terbaru",     label: "KHS Terbaru", required: true },
+        { name: "surat_pernyataan", label: "Surat Pernyataan Bermaterai", required: true },
+    ],
+    "Surat Izin Perkuliahan": [
+        { name: "khs_terbaru",    label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",       label: "Slip Pembayaran UKT", required: true },
+        { name: "dok_pendukung",  label: "Dokumen Pendukung (Surat Dokter/dll)", required: false },
+    ],
+    "Surat Cuti Mahasiswa": [
+        { name: "khs_terbaru",  label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",     label: "Slip Pembayaran UKT", required: true },
+        { name: "surat_cuti",   label: "Dokumen Pendukung Cuti", required: true },
+    ],
+    "Surat Rekomendasi Magang": [
+        { name: "khs_terbaru",      label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",         label: "Slip Pembayaran UKT", required: true },
+        { name: "surat_perusahaan", label: "Surat Permohonan dari Perusahaan", required: true },
+        { name: "cv",               label: "CV / Portofolio", required: false },
+    ],
+    "Surat Aktif": [
+        { name: "khs_terbaru", label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",    label: "Slip Pembayaran UKT", required: true },
+    ],
+    "Surat Magang": [
+        { name: "khs_terbaru",         label: "KHS Terbaru", required: true },
+        { name: "slip_ukt",            label: "Slip Pembayaran UKT", required: true },
+        { name: "surat_penerimaan",    label: "Surat Penerimaan Magang dari Perusahaan", required: true },
+    ],
+};
+
+const boxStyle = "border: 1px dashed #cbd5e1; padding: 1rem; border-radius: 6px; background-color: #f8fafc;";
+const labelStyle = "display: block; font-size: 0.875rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;";
+const inputStyle = "font-size: 0.875rem; color: #64748b;";
+
+document.querySelector('select[name="jenis_surat"]').addEventListener('change', function () {
+    const jenis = this.value;
+    const container = document.getElementById('upload-container');
+    container.innerHTML = '';
+
+    if (!uploadConfig[jenis]) return;
+
+    uploadConfig[jenis].forEach(function (field) {
+        const wrapper = document.createElement('div');
+        wrapper.setAttribute('style', boxStyle);
+
+        const label = document.createElement('label');
+        label.setAttribute('style', labelStyle);
+        const badge = field.required
+            ? '<span style="color:#dc2626;">*</span>'
+            : '<span style="color:#9ca3af; font-weight:400;"> (opsional)</span>';
+        label.innerHTML = `📄 Upload ${field.label} (PDF/JPG/PNG) ${badge}`;
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.name = field.name;
+        input.accept = '.pdf,.jpg,.jpeg,.png';
+        input.setAttribute('style', inputStyle);
+        if (field.required) input.required = true;
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+    });
+});
+</script>
+
 @endsection

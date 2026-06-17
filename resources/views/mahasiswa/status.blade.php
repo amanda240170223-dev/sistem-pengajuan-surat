@@ -26,10 +26,10 @@ body {
                     <thead class="table-dark text-center">
                         <tr>
                             <th width="5%">No</th>
-                            {{-- KOLOM NAMA MAHASISWA SEBELUM JENIS SURAT --}}
                             <th>Nama / NIM</th>
                             <th>Jenis Surat</th>
                             <th>Keterangan</th>
+                            <th width="15%">Tanggal Pengajuan</th>
                             <th width="15%">Status Pengajuan</th>
                             <th width="25%">Unduh Berkas Balasan</th>
                         </tr>
@@ -39,7 +39,6 @@ body {
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
 
-                            {{-- MENAMPILKAN DATA NAMA DAN NIM --}}
                             <td>
                                 <strong>{{ $p->nama ?? 'Nama Tidak Ditemukan' }}</strong><br>
                                 <small class="text-muted">NIM: {{ $p->nim ?? '-' }}</small>
@@ -47,6 +46,20 @@ body {
 
                             <td>{{ $p->jenis_surat }}</td>
                             <td>{{ $p->keterangan }}</td>
+
+                            <td class="text-center">
+                                @if($p->created_at)
+                                    <span style="font-size:0.85rem;">
+                                        {{ \Carbon\Carbon::parse($p->created_at)->setTimezone('Asia/Jakarta')->locale('id')->isoFormat('D MMMM YYYY') }}
+                                    </span><br>
+                                    <small class="text-muted">
+                                        {{ \Carbon\Carbon::parse($p->created_at)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                    </small>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+
                             <td class="text-center">
                                 @if(isset($p->status) && strtolower($p->status) == 'disetujui')
                                     <span class="badge bg-success text-uppercase">{{ $p->status }}</span>
@@ -57,22 +70,21 @@ body {
                                 @endif
                             </td>
 
-                            {{-- TEMPAT DOWNLOAD BERKAS BALASAN --}}
                             <td class="text-center">
-                               @if(isset($p->berkas) && $p->berkas)
-                                <a href="{{ route('download.berkas', $p->id) }}"
-                                target="_blank"
-                                class="btn btn-primary btn-sm font-weight-bold">
-                                    ⬇️ Download Berkas
-                                </a>
-                            @else
-                                <span class="text-muted small">Belum ada berkas</span>
-                            @endif
+                                @if(isset($p->berkas) && $p->berkas)
+                                    <a href="{{ route('download.berkas', $p->id) }}"
+                                       target="_blank"
+                                       class="btn btn-primary btn-sm font-weight-bold">
+                                        ⬇️ Download Berkas
+                                    </a>
+                                @else
+                                    <span class="text-muted small">Belum ada berkas</span>
+                                @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">Belum ada riwayat pengajuan surat.</td>
+                            <td colspan="7" class="text-center text-muted py-4">Belum ada riwayat pengajuan surat.</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -17,36 +17,60 @@ class PengajuanSuratController extends Controller
 
     // Menyimpan data pengajuan ke dalam tabel database
     public function store(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'nim' => 'required|string|max:20',
-            'jenis_surat' => 'required|string',
-            'keterangan' => 'required|string',
-            'slip_ukt' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'krs_terbaru' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
+{
+    // Validasi field utama
+    $request->validate([
+        'nama'        => 'required|string|max:255',
+        'nim'         => 'required|string|max:20',
+        'jenis_surat' => 'required|string',
+        'keterangan'  => 'required|string',
+    ]);
 
-        // Menyimpan file fisik ke folder storage/app/public/dokumen
-        $slipPath = $request->file('slip_ukt')->store('dokumen', 'public');
-        $krsPath = $request->file('krs_terbaru')->store('dokumen', 'public');
+    // Field upload yang mungkin ada
+    $uploadFields = [
+        'khs_terbaru', 'slip_ukt', 'surat_perusahaan',
+        'surat_pernyataan', 'dok_pendukung', 'surat_cuti',
+        'cv', 'surat_penerimaan',
+    ];
 
-        // Memasukkan data ke tabel 'pengajuan' (menyesuaikan skema tabel Anda)
-        DB::table('pengajuan')->insert([
-            'nama' => $request->nama,
-            'nim' => $request->nim,
-            'jenis_surat' => $request->jenis_surat,
-            'keterangan' => $request->keterangan,
-            'slip_ukt' => $slipPath,       // Menyimpan path slip ukt
-            'krs_terbaru' => $krsPath,     // Menyimpan path krs terbaru
-            'status' => 'Diproses',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        return redirect()->back()->with('success', 'Pengajuan surat berhasil dikirim dan sedang direkap admin.');
+    // Validasi file yang dikirim
+    foreach ($uploadFields as $field) {
+        if ($request->hasFile($field)) {
+            $request->validate([
+                $field => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+            ]);
+        }
     }
 
+    // Pastikan field wajib sesuai jenis surat (opsional tapi disarankan)
+    // Validasi dasar: minimal krs_terbaru harus ada
+    if (!$request->hasFile('khs_terbaru')) {
+        return redirect()->back()->withErrors(['khs_terbaru' => 'KHS Terbaru wajib diupload.'])->withInput();
+    }
+
+    // Simpan semua file yang diupload
+    $paths = [];
+    foreach ($uploadFields as $field) {
+        if ($request->hasFile($field)) {
+            $paths[$field] = $request->file($field)->store('dokumen', 'public');
+        }
+    }
+
+    DB::table('pengajuan')->insert([
+        'nama'             => $request->nama,
+        'nim'              => $request->nim,
+        'jenis_surat'      => $request->jenis_surat,
+        'keterangan'       => $request->keterangan,
+        'slip_ukt'         => $paths['slip_ukt'] ?? null,
+        'khs_terbaru'      => $paths['khs_terbaru'] ?? null,
+        'dokumen_tambahan' => json_encode(array_diff_key($paths, array_flip(['slip_ukt', 'khs_terbaru']))),
+        'status'           => 'Diproses',
+        'created_at'       => Carbon::now(),
+        'updated_at'       => Carbon::now(),
+    ]);
+
+    return redirect()->back()->with('success', 'Pengajuan surat berhasil dikirim dan sedang direkap admin.');
+}
     // Menampilkan halaman verifikasi berkas (Admin)
     public function adminIndex()
     {

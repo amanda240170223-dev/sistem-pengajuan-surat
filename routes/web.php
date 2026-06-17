@@ -4,21 +4,28 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\PengajuanSuratController; // Memanggil Controller Baru
+use App\Http\Controllers\PengajuanSuratController;
 use Illuminate\Support\Facades\Storage;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes - Autentikasi & Halaman Mahasiswa
 |--------------------------------------------------------------------------
 */
-// Route untuk menampilkan file dokumen mahasiswa (slip UKT & KRS)
-Route::get('/dokumen/{path}', function ($path) {
-    $fullPath = storage_path('app/public/dokumen/' . $path);
 
-    if (!file_exists($fullPath)) {
-        abort(404, 'File tidak ditemukan');
+Route::get('/templates/{file}', function ($file) {
+    $path = public_path('templates/' . $file);
+
+    if (!file_exists($path)) {
+        abort(404, 'File template "' . $file . '" belum tersedia. Silakan hubungi admin.');
     }
 
+    return response()->file($path);
+});
+
+Route::get('/dokumen/{path}', function ($path) {
+    $fullPath = storage_path('app/public/dokumen/' . $path);
+    if (!file_exists($fullPath)) { abort(404, 'File tidak ditemukan'); }
     $mime = mime_content_type($fullPath);
     return response()->file($fullPath, [
         'Content-Type' => $mime,
@@ -26,43 +33,33 @@ Route::get('/dokumen/{path}', function ($path) {
     ]);
 })->name('dokumen.show');
 
+Route::get('/lihat-dokumen/{filename}', function ($filename) {
+    $path = storage_path('app/public/dokumen/' . $filename);
+    if (!file_exists($path)) { abort(404, 'File tidak ditemukan'); }
+    $mime = mime_content_type($path);
+    return response()->file($path, ['Content-Type' => $mime]);
+})->name('dokumen.lihat');
+
 Route::get('/download/{id}', function ($id) {
     $pengajuan = DB::table('pengajuan')->where('id', $id)->first();
-
-    if (!$pengajuan || !$pengajuan->berkas) {
-        abort(404);
-    }
-
+    if (!$pengajuan || !$pengajuan->berkas) { abort(404); }
     $path = public_path('uploads/' . $pengajuan->berkas);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-
+    if (!file_exists($path)) { abort(404); }
     return response()->file($path);
-
 })->name('download.berkas');
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', function () { return view('welcome'); });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+Route::get('/login', function () { return view('auth.login'); })->name('login');
 
-Route::get('/register', function () {
-    return view('auth.register');
-});
+Route::get('/register', function () { return view('auth.register'); });
 
 Route::post('/register', function (\Illuminate\Http\Request $request) {
-
     $request->validate([
         'nama' => 'required',
         'nim' => 'required|unique:mahasiswa,nim',
         'password' => 'required|min:6'
     ]);
-
     DB::table('mahasiswa')->insert([
         'nama' => $request->nama,
         'nim' => $request->nim,
@@ -70,58 +67,38 @@ Route::post('/register', function (\Illuminate\Http\Request $request) {
         'created_at' => Carbon::now(),
         'updated_at' => Carbon::now()
     ]);
-
     return redirect('/')->with('success', 'Registrasi berhasil, silakan login');
 });
 
 Route::post('/login', function (Illuminate\Http\Request $request) {
-
-    $request->validate([
-        'nim' => 'required',
-        'password' => 'required'
-    ]);
-
+    $request->validate(['nim' => 'required', 'password' => 'required']);
     $mahasiswa = DB::table('mahasiswa')
         ->where('nim', $request->nim)
         ->where('password', $request->password)
         ->first();
-
     if ($mahasiswa) {
-
         session([
             'mahasiswa_login' => true,
             'mahasiswa_nim' => $mahasiswa->nim,
             'mahasiswa_nama' => $mahasiswa->nama
         ]);
-
         return redirect('/dashboard');
     }
-
     return back()->with('error', 'NIM atau Password salah!');
 });
 
-Route::get('/dashboard', function () {
-    return view('mahasiswa.dashboard');
-});
+Route::get('/dashboard', function () { return view('mahasiswa.dashboard'); });
 
-// --- PERBAIKAN ROUTE PENGAJUAN (Menggunakan PengajuanSuratController) ---
 Route::get('/pengajuan', [PengajuanSuratController::class, 'create'])->name('pengajuan.create');
 Route::post('/pengajuan/store', [PengajuanSuratController::class, 'store'])->name('pengajuan.store');
 
-// ==========================================================================
-// ROUTE STATUS: Memfilter data pengajuan berdasarkan NIM milik sendiri
-// ==========================================================================
 Route::get('/status', function () {
     $nim_mahasiswa = session('mahasiswa_nim') ?? session('nim');
-
     if ($nim_mahasiswa) {
-        $pengajuan = DB::table('pengajuan')
-            ->where('nim', $nim_mahasiswa)
-            ->get();
+        $pengajuan = DB::table('pengajuan')->where('nim', $nim_mahasiswa)->get();
     } else {
         $pengajuan = DB::table('pengajuan')->get();
     }
-
     return view('mahasiswa.status', compact('pengajuan'));
 });
 
@@ -130,55 +107,27 @@ Route::get('/status', function () {
 | Web Routes - Login Admin & Fungsi Utama Admin
 |--------------------------------------------------------------------------
 */
-// Route serve dokumen (menggantikan symlink yang bermasalah di XAMPP Windows)
-Route::get('/lihat-dokumen/{filename}', function ($filename) {
-    $path = storage_path('app/public/dokumen/' . $filename);
 
-    if (!file_exists($path)) {
-        abort(404, 'File tidak ditemukan');
-    }
-
-    $mime = mime_content_type($path);
-    return response()->file($path, ['Content-Type' => $mime]);
-})->name('dokumen.lihat');
-
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::get('/admin/login', function () {
-    return view('admin.login');
-});
+Route::get('/admin/login', function () { return view('admin.login'); });
 
 Route::post('/admin/login', function () {
     $email = request('email');
     $password = request('password');
-
-    if($email == 'admin@gmail.com' && $password == 'amandadantemanteman'){
-        session([
-            'admin_login' => true
-        ]);
+    if ($email == 'admin@gmail.com' && $password == 'amandadantemanteman') {
+        session(['admin_login' => true]);
         return redirect('/admin/dashboard');
-    } else {
-        return back()->with('error', 'Email atau Password salah');
     }
+    return back()->with('error', 'Email atau Password salah');
 });
 
-// Rute Dashboard Admin menggunakan Controller bawaan Anda
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-// --- ROUTE ADMIN BARU: Untuk melihat & memantau berkas upload mahasiswa ---
 Route::get('/admin/pengajuan-surat', [PengajuanSuratController::class, 'adminIndex'])->name('admin.pengajuan.index');
-
-// Rute Dinamis untuk Mengubah Status (Setuju, Tolak, Proses)
 Route::post('/admin/status/{id}/{status}', [AdminController::class, 'updateStatus'])->name('admin.updateStatus');
-
-// Rute khusus untuk Upload File Berkas Balasan dari Admin
 Route::post('/admin/upload/{id}', [AdminController::class, 'uploadBerkas'])->name('admin.uploadBerkas');
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - Manajemen Data Admin (CRUD Jenis Surat & Mahasiswa)
+| Web Routes - Manajemen Data Admin
 |--------------------------------------------------------------------------
 */
 
@@ -197,9 +146,7 @@ Route::post('/jenis-surat/store', function () {
 });
 
 Route::get('/jenis-surat/delete/{id}', function ($id) {
-    DB::table('jenis_surat')
-    ->where('id', $id)
-    ->delete();
+    DB::table('jenis_surat')->where('id', $id)->delete();
     return redirect('/jenis-surat');
 });
 
@@ -209,11 +156,7 @@ Route::get('/riwayat/delete/{id}', function ($id) {
 });
 
 Route::get('/riwayat', function () {
-
-    $pengajuan = DB::table('pengajuan')
-        ->orderBy('created_at', 'desc')
-        ->get();
-
+    $pengajuan = DB::table('pengajuan')->orderBy('created_at', 'desc')->get();
     return view('admin.riwayat', compact('pengajuan'));
 });
 
@@ -228,23 +171,17 @@ Route::post('/mahasiswa/store', function () {
 });
 
 Route::get('/mahasiswa/delete/{id}', function ($id) {
-    DB::table('mahasiswa')
-    ->where('id', $id)
-    ->delete();
+    DB::table('mahasiswa')->where('id', $id)->delete();
     return redirect('/mahasiswa');
 });
 
 Route::get('/mahasiswa/edit/{id}', function ($id) {
-    $mahasiswa = DB::table('mahasiswa')
-    ->where('id', $id)
-    ->first();
+    $mahasiswa = DB::table('mahasiswa')->where('id', $id)->first();
     return view('admin.edit_mahasiswa', compact('mahasiswa'));
 });
 
 Route::post('/mahasiswa/update/{id}', function ($id) {
-    DB::table('mahasiswa')
-    ->where('id', $id)
-    ->update([
+    DB::table('mahasiswa')->where('id', $id)->update([
         'nama' => request('nama'),
         'nim' => request('nim'),
         'updated_at' => Carbon::now()
