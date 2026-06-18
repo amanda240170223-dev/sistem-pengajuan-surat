@@ -118,23 +118,35 @@
                             <td>
                                 <div class="d-flex flex-column gap-3">
                                     {{-- Berkas Mahasiswa --}}
+                                    {{-- Berkas Mahasiswa --}}
                                     <div class="d-flex flex-column gap-1 align-items-center pb-2" style="border-bottom:1px dashed #dee2e6;">
                                         <span class="text-muted mb-1" style="font-size:0.75rem; font-weight:600;">📁 Berkas Mahasiswa:</span>
+
                                         @if(isset($p->slip_ukt) && $p->slip_ukt)
                                             <a href="{{ route('dokumen.lihat', basename($p->slip_ukt)) }}" target="_blank"
-                                               class="btn btn-sm btn-outline-primary w-100 font-weight-bold" style="font-size:0.75rem;">
+                                            class="btn btn-sm btn-outline-primary w-100 font-weight-bold" style="font-size:0.75rem;">
                                                 👁️ Lihat Slip UKT
                                             </a>
                                         @else
                                             <span class="text-muted" style="font-size:0.72rem;">⚠️ Slip UKT Kosong</span>
                                         @endif
+
                                         @if(isset($p->khs_terbaru) && $p->khs_terbaru)
                                             <a href="{{ route('dokumen.lihat', basename($p->khs_terbaru)) }}" target="_blank"
-                                               class="btn btn-sm btn-outline-success w-100 font-weight-bold mt-1" style="font-size:0.75rem;">
+                                            class="btn btn-sm btn-outline-warning w-100 font-weight-bold mt-1" style="font-size:0.75rem;">
                                                 👁️ Lihat KHS Terbaru
                                             </a>
                                         @else
                                             <span class="text-muted" style="font-size:0.72rem;">⚠️ KHS Kosong</span>
+                                        @endif
+
+                                        @if(isset($p->krs_terbaru) && $p->krs_terbaru)
+                                            <a href="{{ route('dokumen.lihat', basename($p->krs_terbaru)) }}" target="_blank"
+                                            class="btn btn-sm btn-outline-success w-100 font-weight-bold mt-1" style="font-size:0.75rem;">
+                                                👁️ Lihat KRS Terbaru
+                                            </a>
+                                        @else
+                                            <span class="text-muted" style="font-size:0.72rem;">⚠️ KRS Kosong</span>
                                         @endif
                                     </div>
 

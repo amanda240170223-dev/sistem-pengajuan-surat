@@ -28,7 +28,7 @@ class PengajuanSuratController extends Controller
 
     // Field upload yang mungkin ada
     $uploadFields = [
-        'khs_terbaru', 'slip_ukt', 'surat_perusahaan',
+        'krs_terbaru', 'khs_terbaru', 'slip_ukt', 'surat_perusahaan',
         'surat_pernyataan', 'dok_pendukung', 'surat_cuti',
         'cv', 'surat_penerimaan',
     ];
@@ -42,10 +42,13 @@ class PengajuanSuratController extends Controller
         }
     }
 
-    // Pastikan field wajib sesuai jenis surat (opsional tapi disarankan)
-    // Validasi dasar: minimal krs_terbaru harus ada
-    if (!$request->hasFile('khs_terbaru')) {
-        return redirect()->back()->withErrors(['khs_terbaru' => 'KHS Terbaru wajib diupload.'])->withInput();
+    // Validasi 3 dokumen wajib utama
+    foreach (['krs_terbaru', 'khs_terbaru', 'slip_ukt'] as $wajib) {
+        if (!$request->hasFile($wajib)) {
+            return redirect()->back()
+                ->withErrors([$wajib => ucfirst(str_replace('_', ' ', $wajib)) . ' wajib diupload.'])
+                ->withInput();
+        }
     }
 
     // Simpan semua file yang diupload
@@ -62,8 +65,9 @@ class PengajuanSuratController extends Controller
         'jenis_surat'      => $request->jenis_surat,
         'keterangan'       => $request->keterangan,
         'slip_ukt'         => $paths['slip_ukt'] ?? null,
+        'krs_terbaru'      => $paths['krs_terbaru'] ?? null,
         'khs_terbaru'      => $paths['khs_terbaru'] ?? null,
-        'dokumen_tambahan' => json_encode(array_diff_key($paths, array_flip(['slip_ukt', 'khs_terbaru']))),
+        'dokumen_tambahan' => json_encode(array_diff_key($paths, array_flip(['slip_ukt', 'krs_terbaru', 'khs_terbaru']))),
         'status'           => 'Diproses',
         'created_at'       => Carbon::now(),
         'updated_at'       => Carbon::now(),

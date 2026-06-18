@@ -70,39 +70,47 @@ body {
 <script>
 const uploadConfig = {
     "Surat Keterangan": [
+        { name: "krs_terbaru", label: "KRS Terbaru", required: true },
         { name: "khs_terbaru", label: "KHS Terbaru", required: true },
         { name: "slip_ukt",    label: "Slip Pembayaran UKT", required: true },
     ],
     "Surat Pengantar KP/Magang": [
+        { name: "krs_terbaru",      label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",      label: "KHS Terbaru", required: true },
         { name: "slip_ukt",         label: "Slip Pembayaran UKT", required: true },
         { name: "surat_perusahaan", label: "Surat Permohonan dari Perusahaan", required: true },
     ],
     "Surat Pengunduran Diri": [
+        { name: "krs_terbaru",     label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",     label: "KHS Terbaru", required: true },
         { name: "surat_pernyataan", label: "Surat Pernyataan Bermaterai", required: true },
     ],
     "Surat Izin Perkuliahan": [
+        { name: "krs_terbaru",    label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",    label: "KHS Terbaru", required: true },
         { name: "slip_ukt",       label: "Slip Pembayaran UKT", required: true },
         { name: "dok_pendukung",  label: "Dokumen Pendukung (Surat Dokter/dll)", required: false },
     ],
     "Surat Cuti Mahasiswa": [
+        { name: "krs_terbaru",  label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",  label: "KHS Terbaru", required: true },
         { name: "slip_ukt",     label: "Slip Pembayaran UKT", required: true },
         { name: "surat_cuti",   label: "Dokumen Pendukung Cuti", required: true },
     ],
     "Surat Rekomendasi Magang": [
+        { name: "krs_terbaru",      label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",      label: "KHS Terbaru", required: true },
         { name: "slip_ukt",         label: "Slip Pembayaran UKT", required: true },
         { name: "surat_perusahaan", label: "Surat Permohonan dari Perusahaan", required: true },
         { name: "cv",               label: "CV / Portofolio", required: false },
     ],
     "Surat Aktif": [
+        { name: "krs_terbaru", label: "KRS Terbaru", required: true },
         { name: "khs_terbaru", label: "KHS Terbaru", required: true },
         { name: "slip_ukt",    label: "Slip Pembayaran UKT", required: true },
     ],
     "Surat Magang": [
+        { name: "krs_terbaru",         label: "KRS Terbaru", required: true },
         { name: "khs_terbaru",         label: "KHS Terbaru", required: true },
         { name: "slip_ukt",            label: "Slip Pembayaran UKT", required: true },
         { name: "surat_penerimaan",    label: "Surat Penerimaan Magang dari Perusahaan", required: true },
