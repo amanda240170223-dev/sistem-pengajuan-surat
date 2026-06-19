@@ -113,7 +113,7 @@ Route::get('/admin/login', function () { return view('admin.login'); });
 Route::post('/admin/login', function () {
     $email = request('email');
     $password = request('password');
-    if ($email == 'admin@gmail.com' && $password == 'amandadantemanteman') {
+    if ($email == 'admin@gmail.com' && $password == 'teknikinformatika') {
         session(['admin_login' => true]);
         return redirect('/admin/dashboard');
     }
